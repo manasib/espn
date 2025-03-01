@@ -37,15 +37,19 @@ once you download, you will need to pull llama3.2:1b model with the following co
 
 llama3.2:1b is the smallest model from meta and works great locally. It;s just 1.3GB.
 
+## Python and Poetry
+requires python = ">=3.12"
+requires poetry-core ">=2.0.0,<3.0.0"
+
 
 ## How to run this project? 
-run   `make all` 
+from the root of the repository, run   `make all` 
 
 this should run the etl, to create the local chromadb, run the backend server and open the streamlit ui.
 
 
 ## how to run unit tests 
-run   `make all-unittest` 
+from the root of the repository, run   `make all-unittest` 
 
 ## what could be done better?
 UI
