@@ -17,7 +17,10 @@ from llama_index.vector_stores.chroma.base import ChromaVectorStore
 import config as config
 from setup_logger import logger
 
-
+# this file does:
+# 1. read feeds from the RSS URLs
+# 2. parse feeds and create documents
+# 3. upsert documents to the ChromaDB
 class ETLProcessor:
 
     def __init__(self,
@@ -45,6 +48,8 @@ class ETLProcessor:
             model_name=config.EMBEDDING_MODEL)
         Settings.embed_model = self.embeddings_model
 
+    # this is a fun little adventure to try to add information about the ingested feeds. 
+    # Doens't work as well as I imagined.
     def feed_metadata_data_about_feed(self, count):
         document = Document(
                     text=config.METADATA_DOC["text"].format(number_of_feeds=str(count)), 
@@ -57,6 +62,7 @@ class ETLProcessor:
                     "link": config.METADATA_DOC["link"],
                     })
         return document
+    
     def setup_db(self):
         logger.info("Setting up Chroma-db")
         self.db = chromadb.PersistentClient(path=self.db_path)
@@ -107,10 +113,13 @@ class ETLProcessor:
                 }
                 document = Document(
                     text=text, doc_id=doc_id, metadata=metadata)
-                # storing the document with doc_id as key, as there are same documents included in multiple feeds.
+                # storing the document with doc_id as key, as 
+                # there are same documents included in multiple feeds.
+                # duplicate data makes retrieval bloated and confusing.
                 self.documents[doc_id] = document
                 logger.info(f"Added document with ID: {doc_id}")
-        
+    
+    # upsert the documents to the ChromaDB
     def document_upsert(self):
         original_count = self.chroma_collection.count()
         logger.info(f"{original_count} embeddings exist")

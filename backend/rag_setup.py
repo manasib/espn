@@ -7,7 +7,7 @@ from llama_index.vector_stores.chroma.base import ChromaVectorStore
 import config as config
 from setup_logger import logging
 
-
+# super simple setup for for chromadb with a local directory as the storage
 class RagSetup:
 
     def __init__(self):

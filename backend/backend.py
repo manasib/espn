@@ -23,6 +23,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+# this is the heaviest operation to initialize the LLM and vector index.
+# so we cache it.
 @cache
 def get_chat_engine() -> BaseChatEngine:
     rag = RagSetup()
@@ -34,7 +36,7 @@ def get_chat_engine() -> BaseChatEngine:
     )
     return chat_engine
 
-
+# calculate the time spent on the request and log it.
 @app.middleware("http")
 async def add_process_time_logging(request: Request, call_next):
     start_time = time.time()
@@ -66,7 +68,7 @@ async def query_endpoint(query: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
+# I had grand plans! 
 # @app.post("/new_conversation")
 # async def new_conversation():
 #     try:
@@ -75,7 +77,7 @@ async def query_endpoint(query: str):
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
 
-
+# I had grand plans! 
 @app.post("/reset")
 async def reset_conversation():
     try:
