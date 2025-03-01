@@ -1,28 +1,36 @@
 # ESPN Feed search
 
 # This repository has 3 independent components
-1. Feed_ETL - Feed_etl reads the RSS feed URLs from configuration file and creats embeddings from them and saves those embeddings to local chroma_db. 
+1. Feed_ETL
+
+Feed_etl reads the RSS feed URLs from configuration file and creats embeddings from them and saves those embeddings to local chroma_db. 
 Each RSS URL is read and a text embedding is created and associated with metadata related to the feed like author, date, the url etc.
 
 Why did I choose chroma_db? 
 * Easy local setup.
+* allows usual db operations like upsert, add, delete, etc
 * chroma db allows time based filtering based on metadata. 
 * works great with llama_index chat_engine. 
 
-2. Backend
+2. Backend 
+
 This is a fastAPI based rest api setup. This service provides the backend for the streamlit app. 
 
 
 3. Streamlit app
+
 UI for sending search queries to the backend apis. 
 reset button resets the conversation and removes the conversation history context.
 
 
 # External dependencies
+
 I was asked to create a project which could be run completely locally. 
+
 I have used ollama to serve the LLMs. You just need to install ollama.
 you can download ollama from here https://ollama.com/download
 once you download, you will need to pull llama3.2:1b model with the following command
+
 `ollama pull llama3.2:1b`
 
 llama3.2:1b is the smallest model from meta and works great locally. It;s just 1.3GB.
@@ -30,6 +38,7 @@ llama3.2:1b is the smallest model from meta and works great locally. It;s just 1
 
 # How to run this project? 
 run   `make all` 
+
 this should run the etl, to create the local chromadb, run the backend server and open the streamlit ui.
 
 
