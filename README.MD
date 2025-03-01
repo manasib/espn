@@ -5,9 +5,9 @@
 Each RSS URL is read and a text embedding is created and associated with metadata related to the feed like author, date, the url etc.
 
 Why did I choose chroma_db? 
-1. Easy local setup.
-2. chroma db allows time based filtering based on metadata. 
-3. works great with llama_index chat_engine. 
+* Easy local setup.
+* chroma db allows time based filtering based on metadata. 
+* works great with llama_index chat_engine. 
 
 2. Backend
 This is a fastAPI based rest api setup. This service provides the backend for the streamlit app. 
