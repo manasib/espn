@@ -17,12 +17,23 @@ Why did I choose chroma_db?
 2. Backend 
 
 This is a fastAPI based rest api setup. This service provides the backend for the streamlit app. 
+The `GET /query` endpoint is a conversational endpoint with LLM.
+
+Once you run the application with the instructions below,
+
+You can query feed via REST API is at GET http://localhost:8080/query?query={query} 
+Or 
+Use the fast api docs page http://localhost:8080/docs to query the endpoint from there.
 
 
 3. Streamlit app
 
 UI for sending search queries to the backend apis. 
 reset button resets the conversation and removes the conversation history context.
+
+Once you run the application with the instructions below, 
+
+you can use the streamlit ui with this URL http://localhost:8501 to query the feed.
 
 
 ## External dependencies
