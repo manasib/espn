@@ -1,0 +1,44 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "manasib"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "llama-index (>=0.12.20,<0.13.0)",
+    "llama-index-embeddings-huggingface (>=0.5.2,<0.6.0)",
+    "llama-index-vector-stores-chroma (>=0.4.1,<0.5.0)",
+    "onnxruntime (==1.17.0)",
+    "numpy (==1.26)",
+    "llama-index-llms-ollama (>=0.5.2,<0.6.0)",
+    "fastapi (>=0.115.8,<0.116.0)",
+    "uvicorn (>=0.34.0,<0.35.0)",
+]
+
+[tool.pyink]
+preview = 1
+pyink-use-majority-quotes = 1
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+
+[flake8]
+max-line-length = 88
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^6.0.1"
+flake8 = "^7.1.2"
+black = "^25.1.0"
+autopep8 = "^2.3.2"
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+

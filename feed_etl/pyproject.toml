@@ -1,0 +1,23 @@
+[project]
+name = "feed-etl"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "feedparser (>=6.0.11,<7.0.0)",
+    "llama-index (>=0.12.20,<0.13.0)",
+    "llama-index-embeddings-huggingface (>=0.5.2,<0.6.0)",
+    "llama-index-vector-stores-chroma (>=0.4.1,<0.5.0)",
+    "onnxruntime (==1.17.0)",
+    "numpy (==1.26)",
+    "llama-index-llms-ollama (>=0.5.2,<0.6.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
