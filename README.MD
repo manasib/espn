@@ -36,6 +36,11 @@ Once you run the application with the instructions below,
 you can use the streamlit ui with this URL http://localhost:8501 to query the feed.
 
 
+## System Diagram
+![System Diagram](system_diagram.png)
+
+
+
 ## External dependencies
 
 I was asked to create a project which could be run completely locally. 
@@ -62,6 +67,11 @@ this should run the etl, to create the local chromadb, run the backend server an
 ## how to run unit tests 
 from the root of the repository, run   `make all-unittest` 
 
+
+## chat
+you can questions about sports in this feed https://www.espn.com/espn/news/story?id=3437834
+chat can hold conversation, when you want to change the topic, hit reset button on the top.
+
 ## what could be done better?
 UI
 1. Better UI
@@ -73,7 +83,7 @@ GenAI
 1. Saving conversations
 2. Multi-modal embeddings and response, currently it's text only
 3. Giving a personality to the bot
-4. So much could be done with the data itself, Ideally, I could parse the articles and ingest those in the embeddings, ingest text as well as image data. 
+4. To be able to answer time related questions like what is the score of redsox game today?
 5. Streaming output
 
 
@@ -85,9 +95,6 @@ DevOps
 MLOPs
 MLFlow would be super helpful to tune the prompt and embeddings. 
 logging the model with MLFLow would be nice https://mlflow.org/docs/latest/llms/llama-index/notebooks/llama_index_quickstart.html
-
-
-
 
 
 

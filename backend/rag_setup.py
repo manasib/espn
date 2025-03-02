@@ -1,11 +1,13 @@
 import chromadb
 from llama_index.core import Settings, VectorStoreIndex
+from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.ollama import Ollama
 from llama_index.vector_stores.chroma.base import ChromaVectorStore
 
 import config as config
 from setup_logger import logging
+
 
 # super simple setup for for chromadb with a local directory as the storage
 class RagSetup:

@@ -4,12 +4,9 @@ from time import mktime
 
 import chromadb
 import feedparser
-from llama_index.core import (Document,
-                              Settings,
-                              StorageContext)
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.vector_stores.chroma.base import ChromaVectorStore
-
+import requests
+from bs4 import BeautifulSoup
+from llama_index.core import Document, Settings, StorageContext
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.ollama import Ollama
 from llama_index.vector_stores.chroma.base import ChromaVectorStore
@@ -21,12 +18,11 @@ from setup_logger import logger
 # 1. read feeds from the RSS URLs
 # 2. parse feeds and create documents
 # 3. upsert documents to the ChromaDB
+
+
 class ETLProcessor:
 
-    def __init__(self,
-                 rss_urls,
-                 db_path="./../chroma_db",
-                 collection_name="espn"):
+    def __init__(self, rss_urls, db_path="./../chroma_db", collection_name="espn"):
         self.rss_urls = rss_urls
         self.db_path = db_path
         self.collection_name = collection_name
@@ -44,40 +40,65 @@ class ETLProcessor:
             temperature=0,
         )
         Settings.llm = self.llm
-        self.embeddings_model = HuggingFaceEmbedding(
-            model_name=config.EMBEDDING_MODEL)
+        self.embeddings_model = HuggingFaceEmbedding(model_name=config.EMBEDDING_MODEL)
         Settings.embed_model = self.embeddings_model
 
-    # this is a fun little adventure to try to add information about the ingested feeds. 
+    # this is a fun little adventure to try to add information about the ingested feeds.
     # Doens't work as well as I imagined.
     def feed_metadata_data_about_feed(self, count):
         document = Document(
-                    text=config.METADATA_DOC["text"].format(number_of_feeds=str(count)), 
-                    doc_id=config.METADATA_DOC["id"], 
-                    metadata={
-                    "title": config.METADATA_DOC["title"],
-                    "published": int(datetime.now().now().timestamp()),
-                    "author": config.METADATA_DOC["author"],
-                    "entry_id": config.METADATA_DOC["id"],
-                    "link": config.METADATA_DOC["link"],
-                    })
+            text=config.METADATA_DOC["text"].format(number_of_feeds=str(count)),
+            doc_id=config.METADATA_DOC["id"],
+            metadata={
+                "title": config.METADATA_DOC["title"],
+                "published": int(datetime.now().now().timestamp()),
+                "author": config.METADATA_DOC["author"],
+                "entry_id": config.METADATA_DOC["id"],
+                "link": config.METADATA_DOC["link"],
+            },
+        )
         return document
-    
+
     def setup_db(self):
         logger.info("Setting up Chroma-db")
         self.db = chromadb.PersistentClient(path=self.db_path)
-        self.chroma_collection = self.db.get_or_create_collection(
-            self.collection_name)
+        self.chroma_collection = self.db.get_or_create_collection(self.collection_name)
         initial_count = self.chroma_collection.count()
         logger.info(
-            f"START: Initial Chroma collection has {initial_count} vectors. Each vector represents one page of a rss feed.")
+            f"START: Initial Chroma collection has {initial_count} vectors. Each vector represents one page of a rss feed."
+        )
 
-        self.vector_store = ChromaVectorStore(
-            chroma_collection=self.chroma_collection)
+        self.vector_store = ChromaVectorStore(chroma_collection=self.chroma_collection)
         self.storage_context = StorageContext.from_defaults(
             vector_store=self.vector_store
         )
         logger.info("Chroma-db setup complete")
+
+    def get_text_from_url(self, url):
+        # user-agent header is required to avoid 403 forbidden error
+        headers = {"User-Agent": config.USER_AGENT}
+        try:
+            response = requests.get(url, headers=headers)
+            # Raise HTTPError for bad responses (4xx or 5xx)
+            response.raise_for_status()
+            bs = BeautifulSoup(response.content, "html.parser")
+            # read only article body
+            # we don't need nav, footer and ad information
+            # article-feed > article:nth-child(1) > div > div.article-body
+            article_body_divs = bs.find_all("div", {"class": "article-body"})
+            if article_body_divs:
+                text = "\n".join(
+                    div.get_text(separator="\n", strip=True)
+                    for div in article_body_divs
+                )
+                logger.info(f"Successfully fetched URL: {url}")
+                logger.info(f"Text length: {len(text)}")
+                return text
+            logger.error(f"Failed to find article body for URL: {url}")
+        except requests.exceptions.RequestException as e:
+            logger.exception(f"Error fetching URL: {e}")
+        except Exception as e:
+            logger.exception(f"An error occurred: {e}")
 
     def read_feed(self):
 
@@ -89,8 +110,8 @@ class ETLProcessor:
         for url in self.rss_urls:
             feed = feedparser.parse(url)
             if feed.bozo == 1:
-                logger.error("Error parsing feed: ", feed.bozo_exception)
-                sys.exit(1)
+                logger.error(f"Error parsing feed: {url} {feed.bozo_exception}")
+                continue
 
             logger.info(
                 f"Reading feed Title: {feed.feed.title}, feed has {len(feed.entries)} entries"
@@ -111,15 +132,17 @@ class ETLProcessor:
                     "entry_id": entry.id,
                     "link": entry.link,
                 }
-                document = Document(
-                    text=text, doc_id=doc_id, metadata=metadata)
-                # storing the document with doc_id as key, as 
+                detailed_text = self.get_text_from_url(entry.link)
+                text = text if detailed_text is None else text + detailed_text
+                document = Document(text=text, doc_id=doc_id, metadata=metadata)
+                # storing the document with doc_id as key, as
                 # there are same documents included in multiple feeds.
                 # duplicate data makes retrieval bloated and confusing.
                 self.documents[doc_id] = document
                 logger.info(f"Added document with ID: {doc_id}")
-    
+
     # upsert the documents to the ChromaDB
+
     def document_upsert(self):
         original_count = self.chroma_collection.count()
         logger.info(f"{original_count} embeddings exist")

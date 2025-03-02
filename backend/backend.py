@@ -5,13 +5,11 @@ from typing import List
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from llama_index.core.chat_engine.types import BaseChatEngine
-from llama_index.core.query_engine import CitationQueryEngine
-
 from pydantic import BaseModel
 
+import config as config
 from rag_setup import RagSetup
 from setup_logger import logger
-import config as config
 
 
 async def lifespan(app: FastAPI):
@@ -22,21 +20,27 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
 # this is the heaviest operation to initialize the LLM and vector index.
 # so we cache it.
+
+
 @cache
 def get_chat_engine() -> BaseChatEngine:
     rag = RagSetup()
     index = rag.index
+
     chat_engine = index.as_chat_engine(
         chat_mode=config.CHAT_MODE,
+        similarity_top_k=2,  # read top 2 docs
         context_prompt=(config.CONTEXT_PROMPT_TEMPLATE or None),
         verbose=True,
     )
     return chat_engine
 
+
 # calculate the time spent on the request and log it.
+
+
 @app.middleware("http")
 async def add_process_time_logging(request: Request, call_next):
     start_time = time.time()
@@ -48,7 +52,6 @@ async def add_process_time_logging(request: Request, call_next):
 
 def conversation_search(query):
     resp = get_chat_engine().chat(query)
-    print(resp)
     links = []
     for nodes in resp.source_nodes:
         links.append(nodes.node.metadata["link"])
@@ -68,7 +71,8 @@ async def query_endpoint(query: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# I had grand plans! 
+
+# I had grand plans!
 # @app.post("/new_conversation")
 # async def new_conversation():
 #     try:
@@ -77,7 +81,9 @@ async def query_endpoint(query: str):
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
 
-# I had grand plans! 
+# I had grand plans!
+
+
 @app.post("/reset")
 async def reset_conversation():
     try:

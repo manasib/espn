@@ -132,3 +132,4 @@ poetry.lock
 .pyink_cache/
 
 scratch/
+chroma_db/

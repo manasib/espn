@@ -8,9 +8,9 @@ LLM_HOST = "localhost"
 LLM_PORT = 11434
 CHAT_MODE = "condense_plus_context"
 LLM_TIMEOUT = 120
-CONTEXT_PROMPT_TEMPLATE = """You are a Americal sports league expert,
-you are able to have normal interactions and you can discuss
-about American sports leagues news in details.
+CONTEXT_PROMPT_TEMPLATE = """You are a Americal sports expert,
+Always answer the query using the provided context information,
+and not prior knowledge.
 Here are the relevant documents for the context:\n {context_str}
 \nInstruction: Use the previous chat history, or the context above,
 to interact and help the user."""
